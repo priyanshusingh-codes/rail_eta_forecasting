@@ -1,4 +1,4 @@
-function ForecastCard() {
+function ForecastCard({ train }) {
   return (
     <div className="panel forecast-panel">
       <div className="panel-header">
@@ -9,36 +9,48 @@ function ForecastCard() {
       </div>
 
       <div className="forecast-main">
-        <span className="forecast-label">TRAIN 12860</span>
-        <h4>16:20</h4>
-        <p>Predicted arrival at Howrah Junction</p>
+        <span className="forecast-label">
+          TRAIN {train.train}
+        </span>
+
+        <h4>{train.forecast.predictedEta}</h4>
+
+        <p>
+          Predicted arrival at Howrah Junction
+        </p>
 
         <div className="confidence">
           <div className="confidence-header">
             <span>Prediction confidence</span>
-            <strong>94%</strong>
+
+            <strong>{train.forecast.confidence}%</strong>
           </div>
 
           <div className="confidence-bar">
-            <div className="confidence-fill"></div>
+            <div
+              className="confidence-fill"
+              style={{
+                width: `${train.forecast.confidence}%`,
+              }}
+            ></div>
           </div>
         </div>
       </div>
 
       <div className="forecast-factors">
         <div>
-          <span>Current delay</span>
-          <strong>+18 min</strong>
+          <span>Current status</span>
+          <strong>{train.status}</strong>
         </div>
 
         <div>
-          <span>Congestion</span>
-          <strong>Moderate</strong>
+          <span>Delay risk</span>
+          <strong>{train.forecast.risk}</strong>
         </div>
 
         <div>
-          <span>Next station</span>
-          <strong>Bandel</strong>
+          <span>Current station</span>
+          <strong>{train.station}</strong>
         </div>
       </div>
     </div>

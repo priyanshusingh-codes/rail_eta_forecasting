@@ -1,14 +1,28 @@
+import { useState } from "react";
 import "../App.css";
+
 import Sidebar from "../components/layout/Sidebar";
 import Topbar from "../components/layout/Topbar";
 import StatCard from "../components/dashboard/StatCard";
 import TrainRow from "../components/dashboard/TrainRow";
 import ForecastCard from "../components/dashboard/ForecastCard";
 import NetworkMap from "../components/map/NetworkMap";
+
 import trains from "../data/trains";
 import stats from "../data/stats";
 
 function Dashboard() {
+  const [showAllTrains, setShowAllTrains] = useState(false);
+  const [selectedTrain, setSelectedTrain] = useState(trains[0]);
+
+  const delayedTrains = trains.filter(
+    (train) => train.statusType === "delayed"
+  ).length;
+
+  const onTimeTrains = trains.filter(
+    (train) => train.statusType === "ontime"
+  ).length;
+
   return (
     <div className="app">
       <Sidebar />
@@ -19,7 +33,9 @@ function Dashboard() {
         <section className="welcome">
           <div>
             <p className="eyebrow">REAL-TIME FORECASTING</p>
+
             <h3>Railway network at a glance</h3>
+
             <p>
               Monitor train movement, dynamic ETA predictions and operational
               conditions from one place.
@@ -32,17 +48,24 @@ function Dashboard() {
           </div>
         </section>
 
-     <section className="stats-grid">
-  {stats.map((stat) => (
-    <StatCard
-      key={stat.title}
-      title={stat.title}
-      value={stat.value}
-      change={stat.change}
-      label={stat.label}
-    />
-  ))}
-</section>
+        <section className="stats-grid">
+          {stats.map((stat) => (
+            <StatCard
+              key={stat.title}
+              title={stat.title}
+              value={
+                stat.title === "Delayed"
+                  ? delayedTrains
+                  : stat.title === "On Time"
+                    ? onTimeTrains
+                    : stat.value
+              }
+              change={stat.change}
+              label={stat.label}
+            />
+          ))}
+        </section>
+
         <section className="content-grid">
           <div className="panel train-panel">
             <div className="panel-header">
@@ -51,28 +74,38 @@ function Dashboard() {
                 <h3>Train Status</h3>
               </div>
 
-              <button className="view-button">View all →</button>
+              <button
+                className="view-button"
+                onClick={() => setShowAllTrains(!showAllTrains)}
+              >
+                {showAllTrains ? "Show less ↑" : "View all →"}
+              </button>
             </div>
 
             <div className="train-list">
-              {trains.map((train) => (
-                <TrainRow
-                  key={train.train}
-                  train={train.train}
-                  name={train.name}
-                  route={train.route}
-                  status={train.status}
-                  eta={train.eta}
-                  statusType={train.statusType}
-                />
-              ))}
+              {trains
+                .slice(0, showAllTrains ? trains.length : 2)
+                .map((train) => (
+                  <TrainRow
+                    key={train.train}
+                    train={train.train}
+                    name={train.name}
+                    route={train.route}
+                    status={train.status}
+                    eta={train.eta}
+                    statusType={train.statusType}
+                  />
+                ))}
             </div>
           </div>
 
-          <ForecastCard />
+          <ForecastCard train={selectedTrain} />
         </section>
 
-        <NetworkMap />
+        <NetworkMap
+          selectedTrain={selectedTrain}
+          setSelectedTrain={setSelectedTrain}
+        />
       </main>
     </div>
   );
