@@ -1173,4 +1173,12 @@ button {
   border-radius: 50%;
   background: #2563eb;
   flex-shrink: 0;
+
+}
+/* Mobile bottom navigation spacing */
+
+@media (max-width: 750px) {
+  .main-content {
+    padding-bottom: 110px;
+  }
 }
