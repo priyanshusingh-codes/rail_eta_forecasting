@@ -91,6 +91,7 @@ const trains = [
     statusType: "risk",
     position: 81.7,
     station: "Bandel",
+    eta: "19:05",
 
     mlInput: {
       current_delay: 12,

@@ -1,64 +1,50 @@
 import { useEffect, useState } from "react";
 
-function addMinutesToTime(time, minutes) {
-  const [hours, mins] = time.split(":").map(Number);
-
-  const date = new Date();
-  date.setHours(hours, mins, 0, 0);
-  date.setMinutes(date.getMinutes() + minutes);
-
-  return date.toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
-}
-
 function ForecastCard({ train }) {
   const [prediction, setPrediction] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    async function getPrediction() {
+    let cancelled = false;
+
+    async function getLivePrediction() {
       setLoading(true);
       setError(null);
-      setPrediction(null);
 
       try {
         const response = await fetch(
-          "https://railpredict-ml.onrender.com/predict",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(train.mlInput),
-          }
+          `http://127.0.0.1:8000/predict-live/${train.train}`
         );
 
         if (!response.ok) {
-          throw new Error("Prediction request failed");
+          throw new Error("Live prediction request failed");
         }
 
         const data = await response.json();
 
-        setPrediction(data.predicted_additional_delay);
+        if (!cancelled) {
+          setPrediction(data);
+        }
       } catch (err) {
         console.error(err);
-        setError("Unable to fetch ML prediction");
+
+        if (!cancelled) {
+          setError("Unable to fetch live ML prediction");
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     }
 
-    getPrediction();
-  }, [train]);
+    getLivePrediction();
 
-  const predictedEta =
-    prediction !== null
-      ? addMinutesToTime(train.eta, prediction)
-      : null;
+    return () => {
+      cancelled = true;
+    };
+  }, [train.train]);
 
   return (
     <div className="panel forecast-panel">
@@ -80,14 +66,23 @@ function ForecastCard({ train }) {
 
         {!loading && !error && prediction !== null && (
           <>
-            <h4>{predictedEta}</h4>
+            <h4>
+              {prediction.predicted_eta || train.eta}
+            </h4>
 
             <p>
               Predicted arrival at Howrah Junction
             </p>
 
             <div className="prediction-delay">
-              +{prediction.toFixed(2)} min additional delay
+              +{prediction.predicted_additional_delay.toFixed(2)}
+              {" "}min additional delay
+            </div>
+
+            <div className="prediction-delay">
+              Total predicted delay:{" "}
+              {prediction.predicted_total_delay.toFixed(2)}
+              {" "}min
             </div>
           </>
         )}
@@ -111,8 +106,12 @@ function ForecastCard({ train }) {
 
       <div className="forecast-factors">
         <div>
-          <span>Current status</span>
-          <strong>{train.status}</strong>
+          <span>Current delay</span>
+          <strong>
+            {prediction !== null
+              ? `${prediction.live_data.current_delay} min`
+              : "—"}
+          </strong>
         </div>
 
         <div>
