@@ -40,6 +40,9 @@ function Dashboard() {
               Monitor train movement, dynamic ETA predictions and operational
               conditions from one place.
             </p>
+            <p className="last-updated">
+  Last updated: {new Date().toLocaleString()}
+</p>
           </div>
 
           <div className="live-indicator">
